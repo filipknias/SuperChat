@@ -5,6 +5,7 @@ import pool from "../dbConfig";
 const router: Router = express.Router();
 
 interface Errors {
+  general?: string;
   firstName?: string;
   lastName?: string;
   email?: string;
@@ -35,6 +36,8 @@ const isEmailAvailable = async (email: string): Promise<boolean> => {
   else return false;
 };
 
+// POST /api/users/register
+// Register user
 router.post("/register", async (req: Request, res: Response) => {
   try {
     const { firstName, lastName, email, password, confirmPassword } = req.body;
@@ -85,6 +88,40 @@ router.post("/register", async (req: Request, res: Response) => {
     const token = jwt.sign({ id: createdUser.user_id }, secret);
 
     res.status(200).json({ token, user: createdUser });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: err.message, code: err.code });
+  }
+});
+
+// POST /api/users/login
+// Login user
+router.post("/login", async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+
+    // Check email
+    const emailQuery = await pool.query("SELECT * FROM users WHERE email=$1", [
+      email,
+    ]);
+    if (emailQuery.rowCount === 0) {
+      return res.status(400).json({ general: "Wrong e-mail or password" });
+    }
+
+    // Check password
+    const user = emailQuery.rows[0];
+    const hashedPassword = await bcrypt.compare(password, user.password);
+    if (!hashedPassword) {
+      return res.status(400).json({ general: "Wrong e-mail or password" });
+    }
+
+    // Create json web token
+    if (!process.env.JWT_SECRET) return;
+    const secret: Secret = process.env.JWT_SECRET.toString();
+    const token = jwt.sign({ id: user.user_id }, secret);
+
+    // Login user
+    res.header("auth-token", token).status(200).json({ token, user });
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: err.message, code: err.code });
