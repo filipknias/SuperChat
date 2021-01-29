@@ -262,4 +262,22 @@ router.get("/:userId", async (req: Request, res: Response) => {
   }
 });
 
+router.delete("/:userId", async (req: Request, res: Response) => {
+  try {
+    const query = await pool.query(
+      "DELETE FROM users WHERE user_id=$1 RETURNING *",
+      [req.params.userId]
+    );
+    if (query.rowCount === 0) {
+      res.status(400).json({ errors: { general: "No user with given id" } });
+    } else {
+      const deletedUser = query.rows[0];
+      res.status(200).json({ user: deletedUser });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: err.message, code: err.code });
+  }
+});
+
 export default router;
