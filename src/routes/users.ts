@@ -11,6 +11,7 @@ interface Errors {
   email?: string;
   password?: string;
   confirmPassword?: string;
+  photoUrl?: string;
 }
 
 // Utilities
@@ -214,11 +215,15 @@ router.put("/:userId", async (req: Request, res: Response) => {
 
     // Photo url
     if (photoUrl !== undefined) {
-      const query = pool.query(
-        "UPDATE users SET photo_url=$1 WHERE user_id=$2 RETURNING *",
-        [photoUrl, req.params.userId]
-      );
-      queries.push(query);
+      if (isEmpty(photoUrl)) {
+        errors.photoUrl = "Must not be empty";
+      } else {
+        const query = pool.query(
+          "UPDATE users SET photo_url=$1 WHERE user_id=$2 RETURNING *",
+          [photoUrl, req.params.userId]
+        );
+        queries.push(query);
+      }
     }
 
     // Check for errors
@@ -232,6 +237,25 @@ router.put("/:userId", async (req: Request, res: Response) => {
     const updatedUser = updatedData[lastIndex].rows[0];
 
     res.status(200).json({ user: updatedUser });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: err.message, code: err.code });
+  }
+});
+
+// GET /api/users/:userId
+// Get user data
+router.get("/:userId", async (req: Request, res: Response) => {
+  try {
+    const query = await pool.query("SELECT * FROM users WHERE user_id=$1", [
+      req.params.userId,
+    ]);
+    if (query.rowCount === 0) {
+      res.status(400).json({ errors: { general: "No user with given id" } });
+    } else {
+      const user = query.rows[0];
+      res.status(200).json({ user });
+    }
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: err.message, code: err.code });
