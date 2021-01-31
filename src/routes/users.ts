@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import pool from "../config/dbConfig";
 import verifyToken from "../middleware/verifyToken";
+import verifyUser from "../middleware/verifyUser";
 const router: Router = express.Router();
 
 interface Errors {
@@ -136,151 +137,166 @@ router.post("/login", async (req: Request, res: Response) => {
 
 // PUT /api/users/:userId
 // Update user data
-router.put("/:userId", verifyToken, async (req: Request, res: Response) => {
-  try {
-    const {
-      firstName,
-      lastName,
-      email,
-      password,
-      confirmPassword,
-      photoUrl,
-    } = req.body;
+router.put(
+  "/:userId",
+  verifyUser,
+  verifyToken,
+  async (req: Request, res: Response) => {
+    try {
+      const {
+        firstName,
+        lastName,
+        email,
+        password,
+        confirmPassword,
+        photoUrl,
+      } = req.body;
 
-    const queries = [];
-    const errors: Errors = {};
+      const queries = [];
+      const errors: Errors = {};
 
-    // console.log(typeof firstName, typeof lastName);
+      // console.log(typeof firstName, typeof lastName);
 
-    // First Name
-    if (firstName !== undefined) {
-      if (isEmpty(firstName)) {
-        errors.firstName = "Must not be empty";
-      } else {
-        const query = pool.query(
-          "UPDATE users SET first_name=$1 WHERE user_id=$2 RETURNING *",
-          [firstName, req.params.userId]
-        );
-        queries.push(query);
+      // First Name
+      if (firstName !== undefined) {
+        if (isEmpty(firstName)) {
+          errors.firstName = "Must not be empty";
+        } else {
+          const query = pool.query(
+            "UPDATE users SET first_name=$1 WHERE user_id=$2 RETURNING *",
+            [firstName, req.params.userId]
+          );
+          queries.push(query);
+        }
       }
-    }
 
-    // Last name
-    if (lastName !== undefined) {
-      if (isEmpty(lastName)) {
-        errors.lastName = "Must not be empty";
-      } else {
-        const query = pool.query(
-          "UPDATE users SET last_name=$1 WHERE user_id=$2 RETURNING *",
-          [lastName, req.params.userId]
-        );
-        queries.push(query);
+      // Last name
+      if (lastName !== undefined) {
+        if (isEmpty(lastName)) {
+          errors.lastName = "Must not be empty";
+        } else {
+          const query = pool.query(
+            "UPDATE users SET last_name=$1 WHERE user_id=$2 RETURNING *",
+            [lastName, req.params.userId]
+          );
+          queries.push(query);
+        }
       }
-    }
 
-    // Email
-    if (email !== undefined) {
-      if (isEmpty(email)) {
-        errors.email = "Must not be empty";
-      } else if (isEmail(email) === false) {
-        errors.email = "Email must be correct";
-      } else if ((await isEmailAvailable(email)) === false) {
-        errors.email = "This email is already assigned to another account";
-      } else {
-        const query = pool.query(
-          "UPDATE users SET email=$1 WHERE user_id=$2 RETURNING *",
-          [email, req.params.userId]
-        );
-        queries.push(query);
+      // Email
+      if (email !== undefined) {
+        if (isEmpty(email)) {
+          errors.email = "Must not be empty";
+        } else if (isEmail(email) === false) {
+          errors.email = "Email must be correct";
+        } else if ((await isEmailAvailable(email)) === false) {
+          errors.email = "This email is already assigned to another account";
+        } else {
+          const query = pool.query(
+            "UPDATE users SET email=$1 WHERE user_id=$2 RETURNING *",
+            [email, req.params.userId]
+          );
+          queries.push(query);
+        }
       }
-    }
 
-    // Password
-    if (password !== undefined && confirmPassword !== undefined) {
-      if (isEmpty(password)) {
-        errors.password = "Must not be empty";
-      } else if (password !== confirmPassword) {
-        errors.confirmPassword = "Passwords must be the same";
-      } else if (password.length < 8) {
-        errors.password = "Password must contain at least 8 characters";
-      } else {
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
-        const query = pool.query(
-          "UPDATE users SET password=$1 WHERE user_id=$2 RETURNING *",
-          [hashedPassword, req.params.userId]
-        );
-        queries.push(query);
+      // Password
+      if (password !== undefined && confirmPassword !== undefined) {
+        if (isEmpty(password)) {
+          errors.password = "Must not be empty";
+        } else if (password !== confirmPassword) {
+          errors.confirmPassword = "Passwords must be the same";
+        } else if (password.length < 8) {
+          errors.password = "Password must contain at least 8 characters";
+        } else {
+          const salt = await bcrypt.genSalt(10);
+          const hashedPassword = await bcrypt.hash(password, salt);
+          const query = pool.query(
+            "UPDATE users SET password=$1 WHERE user_id=$2 RETURNING *",
+            [hashedPassword, req.params.userId]
+          );
+          queries.push(query);
+        }
       }
-    }
 
-    // Photo url
-    if (photoUrl !== undefined) {
-      if (isEmpty(photoUrl)) {
-        errors.photoUrl = "Must not be empty";
-      } else {
-        const query = pool.query(
-          "UPDATE users SET photo_url=$1 WHERE user_id=$2 RETURNING *",
-          [photoUrl, req.params.userId]
-        );
-        queries.push(query);
+      // Photo url
+      if (photoUrl !== undefined) {
+        if (isEmpty(photoUrl)) {
+          errors.photoUrl = "Must not be empty";
+        } else {
+          const query = pool.query(
+            "UPDATE users SET photo_url=$1 WHERE user_id=$2 RETURNING *",
+            [photoUrl, req.params.userId]
+          );
+          queries.push(query);
+        }
       }
+
+      // Check for errors
+      if (Object.keys(errors).length > 0) {
+        return res.status(400).json({ errors });
+      }
+
+      // Update user data
+      const updatedData = await Promise.all(queries);
+      const lastIndex = updatedData.length - 1;
+      const updatedUser = updatedData[lastIndex].rows[0];
+
+      res.status(200).json({ user: updatedUser });
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({ message: err.message, code: err.code });
     }
-
-    // Check for errors
-    if (Object.keys(errors).length > 0) {
-      return res.status(400).json({ errors });
-    }
-
-    // Update user data
-    const updatedData = await Promise.all(queries);
-    const lastIndex = updatedData.length - 1;
-    const updatedUser = updatedData[lastIndex].rows[0];
-
-    res.status(200).json({ user: updatedUser });
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: err.message, code: err.code });
   }
-});
+);
 
 // GET /api/users/:userId
 // Get user data
-router.get("/:userId", async (req: Request, res: Response) => {
-  try {
-    const query = await pool.query("SELECT * FROM users WHERE user_id=$1", [
-      req.params.userId,
-    ]);
-    if (query.rowCount === 0) {
-      res.status(400).json({ errors: { general: "No user with given id" } });
-    } else {
-      const user = query.rows[0];
-      res.status(200).json({ user });
+router.get(
+  "/:userId",
+  verifyUser,
+  verifyToken,
+  async (req: Request, res: Response) => {
+    try {
+      const query = await pool.query("SELECT * FROM users WHERE user_id=$1", [
+        req.params.userId,
+      ]);
+      if (query.rowCount === 0) {
+        res.status(400).json({ errors: { general: "No user with given id" } });
+      } else {
+        const user = query.rows[0];
+        res.status(200).json({ user });
+      }
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({ message: err.message, code: err.code });
     }
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: err.message, code: err.code });
   }
-});
+);
 
 // DELETE /api/users/:userId
 // Delete user
-router.delete("/:userId", async (req: Request, res: Response) => {
-  try {
-    const query = await pool.query(
-      "DELETE FROM users WHERE user_id=$1 RETURNING *",
-      [req.params.userId]
-    );
-    if (query.rowCount === 0) {
-      res.status(400).json({ errors: { general: "No user with given id" } });
-    } else {
-      const deletedUser = query.rows[0];
-      res.status(200).json({ user: deletedUser });
+router.delete(
+  "/:userId",
+  verifyUser,
+  verifyToken,
+  async (req: Request, res: Response) => {
+    try {
+      const query = await pool.query(
+        "DELETE FROM users WHERE user_id=$1 RETURNING *",
+        [req.params.userId]
+      );
+      if (query.rowCount === 0) {
+        res.status(400).json({ errors: { general: "No user with given id" } });
+      } else {
+        const deletedUser = query.rows[0];
+        res.status(200).json({ user: deletedUser });
+      }
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({ message: err.message, code: err.code });
     }
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: err.message, code: err.code });
   }
-});
+);
 
 export default router;
