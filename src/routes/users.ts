@@ -1,7 +1,8 @@
 import express, { Request, Response, Router } from "express";
 import bcrypt from "bcrypt";
-import jwt, { Secret } from "jsonwebtoken";
-import pool from "../dbConfig";
+import jwt from "jsonwebtoken";
+import pool from "../config/dbConfig";
+import verifyToken from "../middleware/verifyToken";
 const router: Router = express.Router();
 
 interface Errors {
@@ -85,7 +86,7 @@ router.post("/register", async (req: Request, res: Response) => {
 
     // Create json web token
     if (!process.env.JWT_SECRET) return;
-    const secret: Secret = process.env.JWT_SECRET.toString();
+    const secret = process.env.JWT_SECRET.toString();
     const token = jwt.sign({ id: createdUser.user_id }, secret);
 
     res.status(200).json({ token, user: createdUser });
@@ -122,7 +123,7 @@ router.post("/login", async (req: Request, res: Response) => {
 
     // Create json web token
     if (!process.env.JWT_SECRET) return;
-    const secret: Secret = process.env.JWT_SECRET.toString();
+    const secret = process.env.JWT_SECRET.toString();
     const token = jwt.sign({ id: user.user_id }, secret);
 
     // Login user
@@ -135,7 +136,7 @@ router.post("/login", async (req: Request, res: Response) => {
 
 // PUT /api/users/:userId
 // Update user data
-router.put("/:userId", async (req: Request, res: Response) => {
+router.put("/:userId", verifyToken, async (req: Request, res: Response) => {
   try {
     const {
       firstName,
@@ -262,6 +263,8 @@ router.get("/:userId", async (req: Request, res: Response) => {
   }
 });
 
+// DELETE /api/users/:userId
+// Delete user
 router.delete("/:userId", async (req: Request, res: Response) => {
   try {
     const query = await pool.query(
