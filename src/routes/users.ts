@@ -79,9 +79,10 @@ router.post("/register", async (req: Request, res: Response) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // Insert user
+    const fullName = `${firstName} ${lastName}`;
     const query = await pool.query(
-      "INSERT INTO users (first_name, last_name, email, password, created_at, photo_url) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
-      [firstName, lastName, email, hashedPassword, new Date(), null]
+      "INSERT INTO users (first_name, last_name, full_name, email, password, created_at, photo_url) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
+      [firstName, lastName, fullName, email, hashedPassword, new Date(), null]
     );
     const createdUser = query.rows[0];
 
@@ -298,5 +299,20 @@ router.delete(
     }
   }
 );
+
+// GET /api/users?fullName
+// Get user with given full name
+router.get("/", async (req: Request, res: Response) => {
+  try {
+    const query = await pool.query(
+      "SELECT * FROM users WHERE full_name LIKE $1",
+      [`%${req.query.fullName}%`]
+    );
+    res.status(200).json({ users: query.rows });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: err.message, code: err.code });
+  }
+});
 
 export default router;

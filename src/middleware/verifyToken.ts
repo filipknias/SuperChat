@@ -1,7 +1,8 @@
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
+import { AuthRequest } from "../config/types";
 import jwt from "jsonwebtoken";
 
-export default (req: Request, res: Response, next: NextFunction) => {
+export default (req: AuthRequest, res: Response, next: NextFunction) => {
   const token = req.header("auth-token");
   if (!token) return res.status(401).json({ error: "Access denied" });
 
