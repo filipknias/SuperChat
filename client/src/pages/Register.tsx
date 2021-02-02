@@ -11,7 +11,7 @@ import {
   FormLabel,
   Stack,
   Flex,
-  Checkbox,
+  SimpleGrid,
   Link as ChakraLink,
   Button,
   Image,
@@ -19,11 +19,13 @@ import {
 // Images
 import AppLogo from "../assets/app-logo.svg";
 
-const Login: React.FC = () => {
+const Register: React.FC = () => {
   // State
+  const [firstName, setFirstName] = useState<string>("");
+  const [lastName, setLastName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const [rememberMe, setRememberMe] = useState<boolean>(true);
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,17 +48,39 @@ const Login: React.FC = () => {
         </Flex>
         <Stack spacing={1} mb={8}>
           <Heading textAlign="center" size="lg" color="black" fontWeight="500">
-            Sign in to your account
+            Create your account
           </Heading>
           <Heading textAlign="center" size="md" fontWeight="400">
             Or{" "}
             <ChakraLink color="teal.400" as="span">
-              <Link to="/register">create your account here</Link>
+              <Link to="/login">sign in to your account</Link>
             </ChakraLink>
           </Heading>
         </Stack>
         <form onSubmit={handleSubmit}>
           <Stack spacing={5}>
+            <SimpleGrid columns={2} spacing={5}>
+              <FormControl>
+                <FormLabel>First Name</FormLabel>
+                <Input
+                  type="text"
+                  placeholder="Enter your first name"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  required
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel>Last Name</FormLabel>
+                <Input
+                  type="text"
+                  placeholder="Enter your last name"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  required
+                />
+              </FormControl>
+            </SimpleGrid>
             <FormControl>
               <FormLabel>Email</FormLabel>
               <Input
@@ -77,21 +101,18 @@ const Login: React.FC = () => {
                 required
               />
             </FormControl>
-            <Stack isInline justifyContent="space-between">
-              <FormControl as="fieldset" flex={1}>
-                <Checkbox
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                >
-                  Remember Me
-                </Checkbox>
-              </FormControl>
-              <ChakraLink color="teal.400" as="div">
-                <Link to="/reset-password">Forgot your password ?</Link>
-              </ChakraLink>
-            </Stack>
+            <FormControl>
+              <FormLabel>Confirm Password</FormLabel>
+              <Input
+                type="password"
+                placeholder="Confirm password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+              />
+            </FormControl>
             <Button type="submit" colorScheme="blue" w="100%">
-              Sign In
+              Create account
             </Button>
           </Stack>
         </form>
@@ -100,4 +121,4 @@ const Login: React.FC = () => {
   );
 };
 
-export default Login;
+export default Register;
