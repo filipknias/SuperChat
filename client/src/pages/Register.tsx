@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 // React router dom
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 // Chakra UI
 import {
   Center,
@@ -18,6 +18,12 @@ import {
 } from "@chakra-ui/react";
 // Images
 import AppLogo from "../assets/app-logo.svg";
+// Redux
+import { useDispatch, useSelector } from "react-redux";
+import { registerUser } from "../redux/actions/userActions";
+// Types
+import { RootState } from "../redux/store";
+import { UserState } from "../redux/reducers/userReducer";
 
 const Register: React.FC = () => {
   // State
@@ -26,9 +32,23 @@ const Register: React.FC = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
+  // Hooks
+  const history = useHistory();
+  const dispatch = useDispatch();
+  const userState = useSelector<RootState, UserState>((state) => state.user);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    dispatch(
+      registerUser(
+        firstName,
+        lastName,
+        email,
+        password,
+        confirmPassword,
+        history
+      )
+    );
   };
 
   return (
@@ -63,6 +83,9 @@ const Register: React.FC = () => {
               <FormControl>
                 <FormLabel>First Name</FormLabel>
                 <Input
+                  isInvalid={
+                    userState.error && userState.error.firstName ? true : false
+                  }
                   type="text"
                   placeholder="Enter your first name"
                   value={firstName}
@@ -73,6 +96,9 @@ const Register: React.FC = () => {
               <FormControl>
                 <FormLabel>Last Name</FormLabel>
                 <Input
+                  isInvalid={
+                    userState.error && userState.error.lastName ? true : false
+                  }
                   type="text"
                   placeholder="Enter your last name"
                   value={lastName}
@@ -84,6 +110,9 @@ const Register: React.FC = () => {
             <FormControl>
               <FormLabel>Email</FormLabel>
               <Input
+                isInvalid={
+                  userState.error && userState.error.email ? true : false
+                }
                 type="email"
                 placeholder="Enter your email"
                 value={email}
@@ -94,6 +123,9 @@ const Register: React.FC = () => {
             <FormControl>
               <FormLabel>Password</FormLabel>
               <Input
+                isInvalid={
+                  userState.error && userState.error.password ? true : false
+                }
                 type="password"
                 placeholder="Enter your password"
                 value={password}
@@ -104,6 +136,11 @@ const Register: React.FC = () => {
             <FormControl>
               <FormLabel>Confirm Password</FormLabel>
               <Input
+                isInvalid={
+                  userState.error && userState.error.confirmPassword
+                    ? true
+                    : false
+                }
                 type="password"
                 placeholder="Confirm password"
                 value={confirmPassword}
@@ -111,7 +148,12 @@ const Register: React.FC = () => {
                 required
               />
             </FormControl>
-            <Button type="submit" colorScheme="blue" w="100%">
+            <Button
+              type="submit"
+              colorScheme="blue"
+              w="100%"
+              isLoading={userState.loading}
+            >
               Create account
             </Button>
           </Stack>

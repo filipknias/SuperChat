@@ -38,7 +38,7 @@ const Login: React.FC = () => {
   const dispatch = useDispatch();
   const userState = useSelector<RootState, UserState>((state) => state.user);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     dispatch(loginUser(email, password, rememberMe, history));
   };
