@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 // React router dom
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 // Chakra UI
 import {
   Center,
@@ -15,18 +15,32 @@ import {
   Link as ChakraLink,
   Button,
   Image,
+  Alert,
+  AlertIcon,
+  AlertTitle,
 } from "@chakra-ui/react";
 // Images
 import AppLogo from "../assets/app-logo.svg";
+// Redux
+import { useDispatch, useSelector } from "react-redux";
+import { loginUser } from "../redux/actions/userActions";
+// Types
+import { RootState } from "../redux/store";
+import { UserState } from "../redux/reducers/userReducer";
 
 const Login: React.FC = () => {
   // State
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [rememberMe, setRememberMe] = useState<boolean>(true);
+  // Hooks
+  const history = useHistory();
+  const dispatch = useDispatch();
+  const userState = useSelector<RootState, UserState>((state) => state.user);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    dispatch(loginUser(email, password, rememberMe, history));
   };
 
   return (
@@ -55,6 +69,12 @@ const Login: React.FC = () => {
             </ChakraLink>
           </Heading>
         </Stack>
+        {userState.error && userState.error.general && (
+          <Alert status="error" mb={5}>
+            <AlertIcon />
+            <AlertTitle mr={2}>{userState.error.general}</AlertTitle>
+          </Alert>
+        )}
         <form onSubmit={handleSubmit}>
           <Stack spacing={5}>
             <FormControl>
@@ -80,6 +100,7 @@ const Login: React.FC = () => {
             <Stack isInline justifyContent="space-between">
               <FormControl as="fieldset" flex={1}>
                 <Checkbox
+                  defaultChecked={rememberMe}
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
                 >
@@ -90,7 +111,12 @@ const Login: React.FC = () => {
                 <Link to="/reset-password">Forgot your password ?</Link>
               </ChakraLink>
             </Stack>
-            <Button type="submit" colorScheme="blue" w="100%">
+            <Button
+              type="submit"
+              colorScheme="blue"
+              w="100%"
+              isLoading={userState.loading}
+            >
               Sign In
             </Button>
           </Stack>

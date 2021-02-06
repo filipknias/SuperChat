@@ -2,23 +2,18 @@ import React from "react";
 // Components
 import ProfilePopover from "./ProfilePopover";
 // Chakra UI
-import {
-  Box,
-  Link as ChakraLink,
-  Container,
-  Grid,
-  Input,
-} from "@chakra-ui/react";
+import { Box, Container, Grid, Input } from "@chakra-ui/react";
+// Redux
+import { useSelector } from "react-redux";
+// Types
+import { RootState } from "../../redux/store";
 
 const Navbar: React.FC = () => {
+  // Hooks
+  const userState = useSelector<RootState>((state) => state.user);
+
   return (
-    <Box
-      w="100vw"
-      bg="red.500"
-      color="white"
-      px={{ base: 1, lg: 3 }}
-      py={{ base: 2, lg: 3 }}
-    >
+    <Box w="100vw" bg="red.500" color="white" px={{ base: 1, lg: 3 }} py={2}>
       <Container maxW="3xl">
         <Grid
           templateColumns="1fr auto"

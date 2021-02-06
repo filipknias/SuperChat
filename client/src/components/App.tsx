@@ -7,18 +7,23 @@ import Login from "../pages/Login";
 import Register from "../pages/Register";
 // Chakra UI
 import { Box } from "@chakra-ui/react";
+// Redux
+import { Provider } from "react-redux";
+import store from "../redux/store";
 
 const App: React.FC = () => {
   return (
-    <Box bg="gray.100" w="100vw" h="100vh">
-      <Router>
-        <Switch>
-          <Route exact path="/" component={Dashboard} />
-          <Route path="/login" component={Login} />
-          <Route path="/register" component={Register} />
-        </Switch>
-      </Router>
-    </Box>
+    <Provider store={store}>
+      <Box bg="gray.100" maxW="100vw" maxH="100vh">
+        <Router>
+          <Switch>
+            <Route exact path="/" component={Dashboard} />
+            <Route path="/login" component={Login} />
+            <Route path="/register" component={Register} />
+          </Switch>
+        </Router>
+      </Box>
+    </Provider>
   );
 };
 

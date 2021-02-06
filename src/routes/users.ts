@@ -71,7 +71,7 @@ router.post("/register", async (req: Request, res: Response) => {
     }
 
     if (Object.keys(errors).length > 0) {
-      return res.status(400).json({ errors });
+      return res.status(400).json(errors);
     }
 
     // Hash password
@@ -104,23 +104,23 @@ router.post("/login", async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
+    const loginError = {
+      general: "Wrong e-mail or password",
+    };
+
     // Check email
     const query = await pool.query("SELECT * FROM users WHERE email=$1", [
       email,
     ]);
     if (query.rowCount === 0) {
-      return res
-        .status(400)
-        .json({ errors: { general: "Wrong e-mail or password" } });
+      return res.status(400).json(loginError);
     }
 
     // Check password
     const user = query.rows[0];
     const hashedPassword = await bcrypt.compare(password, user.password);
     if (!hashedPassword) {
-      return res
-        .status(400)
-        .json({ errors: { general: "Wrong e-mail or password" } });
+      return res.status(400).json(loginError);
     }
 
     // Create json web token
@@ -235,7 +235,7 @@ router.put(
 
       // Check for errors
       if (Object.keys(errors).length > 0) {
-        return res.status(400).json({ errors });
+        return res.status(400).json(errors);
       }
 
       // Update user data
