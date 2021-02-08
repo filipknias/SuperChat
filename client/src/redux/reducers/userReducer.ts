@@ -12,7 +12,7 @@ interface Action {
   payload: any;
 }
 
-interface Data {
+interface UserData {
   email: string;
   firstName: string;
   lastName: string;
@@ -20,6 +20,11 @@ interface Data {
   password: string;
   createdAt: Date;
   photoUrl: string | null;
+}
+
+interface Data {
+  token: string;
+  user: UserData;
 }
 
 interface Errors {
