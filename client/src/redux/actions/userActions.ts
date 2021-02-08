@@ -1,3 +1,5 @@
+import axios from "axios";
+// Types
 import {
   SET_USER,
   LOGOUT_USER,
@@ -7,7 +9,6 @@ import {
   STOP_USER_LOADING,
 } from "../types";
 import { Dispatch } from "redux";
-import axios from "axios";
 
 export const loginUser = (
   email: string,
@@ -78,4 +79,21 @@ export const registerUser = (
     });
   }
   dispatch({ type: STOP_USER_LOADING });
+};
+
+export const logoutUser = () => (dispatch: Dispatch) => {
+  localStorage.removeItem("superchat-auth-token");
+  dispatch({ type: LOGOUT_USER });
+};
+
+export const loginUserById = (id: string) => async (dispatch: Dispatch) => {
+  try {
+    const user = await axios.get(`/api/users/token/${id}`);
+    dispatch({ type: SET_USER, payload: user.data });
+  } catch (err) {
+    dispatch({
+      type: SET_ERROR,
+      payload: err.response.data,
+    });
+  }
 };

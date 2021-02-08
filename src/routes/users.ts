@@ -315,4 +315,31 @@ router.get("/", async (req: Request, res: Response) => {
   }
 });
 
+// GET /api/users/token/:userId
+// Sign new json web token
+router.get(
+  "/token/:userId",
+  verifyUser,
+  async (req: Request, res: Response) => {
+    try {
+      // Get user data
+      const query = await pool.query("SELECT * FROM users WHERE user_id=$1", [
+        req.params.userId,
+      ]);
+      const user = query.rows[0];
+
+      // Create json web token
+      if (!process.env.JWT_SECRET) return;
+      const secret = process.env.JWT_SECRET.toString();
+      const token = jwt.sign({ id: user.user_id }, secret);
+
+      // Login user
+      res.header("auth-token", token).status(200).json({ token, user });
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({ message: err.message, code: err.code });
+    }
+  }
+);
+
 export default router;
