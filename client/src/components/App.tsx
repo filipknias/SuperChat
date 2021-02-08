@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import axios from "axios";
-import jwtDecode, { JwtPayload } from "jwt-decode";
+import jwtDecode from "jwt-decode";
 // React router
 import { BrowserRouter as Router, Switch, useHistory } from "react-router-dom";
 // Components

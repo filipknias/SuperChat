@@ -14,12 +14,12 @@ interface Action {
 
 interface UserData {
   email: string;
-  firstName: string;
-  lastName: string;
-  fullName: string;
+  first_name: string;
+  last_name: string;
+  full_name: string;
   password: string;
-  createdAt: Date;
-  photoUrl: string | null;
+  created_at: Date;
+  photo_url: string | null;
 }
 
 interface Data {
