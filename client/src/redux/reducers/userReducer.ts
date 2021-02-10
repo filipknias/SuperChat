@@ -12,7 +12,8 @@ interface Action {
   payload: any;
 }
 
-interface UserData {
+export interface UserData {
+  user_id: number;
   email: string;
   first_name: string;
   last_name: string;

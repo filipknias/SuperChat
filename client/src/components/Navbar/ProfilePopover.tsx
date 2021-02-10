@@ -24,31 +24,13 @@ const ProfilePopover: React.FC = () => {
   const userState = useSelector<RootState, UserState>((state) => state.user);
   const dispatch = useDispatch();
 
-  interface UserAvatarProps {
-    name: string | undefined;
-    photoUrl: string | null | undefined;
-    cursor: "default" | "pointer";
-  }
-
-  const UserAvatar: React.FC<UserAvatarProps> = ({
-    name,
-    photoUrl,
-    cursor,
-  }) => {
-    if (photoUrl === null) {
-      return <Avatar name={name} cursor={cursor} />;
-    } else {
-      return <Avatar name={name} src={photoUrl} cursor={cursor} />;
-    }
-  };
-
   return (
     <Popover placement="bottom-end">
       <PopoverTrigger>
         <a>
-          <UserAvatar
+          <Avatar
             name={userState.data?.user.full_name}
-            photoUrl={userState.data?.user.photo_url}
+            photourl={userState.data?.user.photo_url || undefined}
             cursor="pointer"
           />
         </a>
@@ -56,10 +38,9 @@ const ProfilePopover: React.FC = () => {
       <PopoverContent color="black">
         <PopoverBody>
           <Flex alignItems="center">
-            <UserAvatar
+            <Avatar
               name={userState.data?.user.full_name}
-              photoUrl={userState.data?.user.photo_url}
-              cursor="default"
+              photourl={userState.data?.user.photo_url || undefined}
             />
             <VStack ml={3} alignItems="flex-start">
               <Heading size="md">{userState.data?.user.full_name}</Heading>

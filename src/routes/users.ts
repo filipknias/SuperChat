@@ -308,7 +308,7 @@ router.get("/", async (req: Request, res: Response) => {
       "SELECT * FROM users WHERE full_name LIKE $1",
       [`%${req.query.fullName}%`]
     );
-    res.status(200).json({ users: query.rows });
+    res.status(200).json(query.rows);
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: err.message, code: err.code });
