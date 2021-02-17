@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import axios from "axios";
 import jwtDecode from "jwt-decode";
+import io from "socket.io-client";
 // React router
 import { BrowserRouter as Router, Switch, useHistory } from "react-router-dom";
 // Components
@@ -15,6 +16,7 @@ import { Box } from "@chakra-ui/react";
 // Redux
 import { useSelector, useDispatch } from "react-redux";
 import { logoutUser, loginUserById } from "../redux/actions/userActions";
+import { setSocket } from "../redux/actions/dataActions";
 // Types
 import { RootState } from "../redux/store";
 import { UserState } from "../redux/reducers/userReducer";
@@ -41,8 +43,20 @@ const App: React.FC = () => {
     }
   }, []);
 
+  useEffect(() => {
+    if (userState.auth) {
+      const newSocket = io("localhost:3000", {
+        query: { id: userState.data?.user.user_id.toString() },
+        port: process.env.PORT || "3000",
+      });
+      dispatch(setSocket(newSocket));
+    } else {
+      dispatch(setSocket(null));
+    }
+  }, [userState.auth]);
+
   return (
-    <Box bg="gray.100" maxW="100vw" maxH="100vh">
+    <Box bg="gray.200" w="100vw" h="100vh">
       <Router>
         <Switch>
           <PrivateRoute

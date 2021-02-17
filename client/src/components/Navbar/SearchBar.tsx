@@ -13,7 +13,8 @@ import {
   Heading,
 } from "@chakra-ui/react";
 // Redux
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { setSelectedUser } from "../../redux/actions/dataActions";
 // Types
 import { UserData, UserState } from "../../redux/reducers/userReducer";
 import { RootState } from "../../redux/store";
@@ -27,6 +28,7 @@ const SearchBar: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   // Hooks
   const userState = useSelector<RootState, UserState>((state) => state.user);
+  const dispatch = useDispatch();
 
   const searchPeople = async (name: string) => {
     const results = await axios.get(`/api/users?fullName=${name}`);
@@ -48,6 +50,14 @@ const SearchBar: React.FC = () => {
     if (inputRef.current && inputRef.current.value !== "") {
       await debounceFunction.current(inputRef.current.value);
     }
+  };
+
+  const handleUserClick = (userData: UserData) => {
+    dispatch(setSelectedUser(userData));
+    if (inputRef.current) {
+      inputRef.current.value = "";
+    }
+    setOpen(false);
   };
 
   const updatePopoverWidth = () => {
@@ -106,6 +116,7 @@ const SearchBar: React.FC = () => {
                     />
                   }
                   justifyContent="flex-start"
+                  onClick={() => handleUserClick(userData)}
                 >
                   {userData.full_name}
                 </Button>

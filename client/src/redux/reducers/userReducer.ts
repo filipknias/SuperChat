@@ -23,6 +23,13 @@ export interface UserData {
   photo_url: string | null;
 }
 
+export interface UserState {
+  auth: boolean;
+  data: Data | null;
+  error: Errors | null;
+  loading: boolean;
+}
+
 interface Data {
   token: string;
   user: UserData;
@@ -36,13 +43,6 @@ interface Errors {
   password?: string;
   confirmPassword?: string;
   photoUrl?: string;
-}
-
-export interface UserState {
-  auth: boolean;
-  data: Data | null;
-  error: Errors | null;
-  loading: boolean;
 }
 
 const initialState = {

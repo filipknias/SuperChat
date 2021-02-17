@@ -24,6 +24,18 @@ import { Socket, Server } from "socket.io";
 const socket = require("socket.io");
 const io: Server = socket(server);
 
+interface Message {
+  message: string;
+  sender_id: number;
+  recipient_id: number;
+}
+
 io.on("connection", (socket: Socket) => {
   console.log("Socket.io connected");
+
+  socket.join(socket.handshake.query.id);
+
+  socket.on("send-message", (message: Message) => {
+    io.to(message.recipient_id.toString()).emit("receive-message", message);
+  });
 });
