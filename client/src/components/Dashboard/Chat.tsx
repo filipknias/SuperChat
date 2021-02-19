@@ -12,7 +12,8 @@ import {
 } from "@chakra-ui/react";
 import { CloseIcon, ChatIcon } from "@chakra-ui/icons";
 // Redux
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { setSelectedUser } from "../../redux/actions/dataActions";
 // Types
 import { UserState, UserData } from "../../redux/reducers/userReducer";
 import { DataState } from "../../redux/reducers/dataReducer";
@@ -30,10 +31,10 @@ const Chat: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   // Refs
   const inputRef = useRef<HTMLInputElement>(null);
-  const formRef = useRef<HTMLFormElement>(null);
   // Hooks
   const dataState = useSelector<RootState, DataState>((state) => state.data);
   const userState = useSelector<RootState, UserState>((state) => state.user);
+  const dispatch = useDispatch();
   const { socket, selectedUser } = dataState;
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -87,7 +88,10 @@ const Chat: React.FC = () => {
           {selectedUser?.full_name}
         </Heading>
         <Tooltip label="Close">
-          <CloseIcon role="button" />
+          <CloseIcon
+            role="button"
+            onClick={() => dispatch(setSelectedUser(null))}
+          />
         </Tooltip>
       </Flex>
       <Flex direction="column" flex={1} p={3}>
@@ -115,7 +119,7 @@ const Chat: React.FC = () => {
           />
         ))}
       </Flex>
-      <form ref={formRef} onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit}>
         <InputGroup>
           <Input
             type="text"
@@ -129,10 +133,12 @@ const Chat: React.FC = () => {
             h="100%"
             children={
               <Tooltip label="Send">
-                <ChatIcon
-                  onClick={() => formRef.current?.submit()}
-                  role="button"
-                />
+                <button
+                  type="submit"
+                  style={{ padding: 10, background: "none" }}
+                >
+                  <ChatIcon border={0} role="button" />
+                </button>
               </Tooltip>
             }
           />
