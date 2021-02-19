@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
+// Components
+import Message from "./Message";
 // Chakra UI
 import {
-  Box,
   Input,
   Flex,
   Heading,
@@ -13,14 +14,15 @@ import { CloseIcon, ChatIcon } from "@chakra-ui/icons";
 // Redux
 import { useSelector } from "react-redux";
 // Types
-import { UserState } from "../../redux/reducers/userReducer";
+import { UserState, UserData } from "../../redux/reducers/userReducer";
 import { DataState } from "../../redux/reducers/dataReducer";
 import { RootState } from "../../redux/store";
 
 interface Message {
   message: string;
-  sender_id: number;
+  sender_user: UserData;
   recipient_id: number;
+  created_at: Date;
 }
 
 const Chat: React.FC = () => {
@@ -36,18 +38,14 @@ const Chat: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (
-      !inputRef.current ||
-      !userState.data ||
-      !dataState.selectedUser ||
-      !socket
-    )
+    if (!inputRef.current || !userState.data || !selectedUser || !socket)
       return;
 
     const message = {
       message: inputRef.current.value,
-      sender_id: userState.data?.user.user_id,
-      recipient_id: dataState.selectedUser?.user_id,
+      sender_user: userState.data?.user,
+      recipient_id: selectedUser?.user_id,
+      created_at: new Date(),
     };
     socket.emit("send-message", message);
 
@@ -57,10 +55,10 @@ const Chat: React.FC = () => {
   };
 
   useEffect(() => {
-    if (!socket || !dataState.selectedUser) return;
+    if (!socket || !selectedUser) return;
 
     socket.on("receive-message", (message: Message) => {
-      if (message.sender_id === dataState.selectedUser?.user_id) {
+      if (message.sender_user.user_id === selectedUser?.user_id) {
         setMessages((messages) => [...messages, message]);
       }
     });
@@ -68,12 +66,12 @@ const Chat: React.FC = () => {
     return () => {
       socket.off("receive-message");
     };
-  }, [socket, dataState.selectedUser]);
+  }, [socket, selectedUser]);
 
   useEffect(() => {
     // TODO: Fetch messages from database
     setMessages([]);
-  }, [dataState]);
+  }, [selectedUser]);
 
   return (
     <Flex direction="column" my={5} w="100%" h="100%" bg="white">
@@ -94,30 +92,27 @@ const Chat: React.FC = () => {
       </Flex>
       <Flex direction="column" flex={1} p={3}>
         {messages.map((message, index) => (
-          <Box
+          <Message
             key={index}
-            bg={
-              message.sender_id === userState.data?.user.user_id
+            photoUrl={
+              message.sender_user.photo_url === null
+                ? undefined
+                : message.sender_user.photo_url
+            }
+            name={message.sender_user.full_name}
+            message={message.message}
+            color={
+              message.sender_user.user_id === userState.data?.user.user_id
                 ? "blue"
                 : "white"
             }
-            color={
-              message.sender_id === userState.data?.user.user_id
-                ? "white"
-                : "black"
-            }
-            borderRadius={5}
-            border="1px"
-            p={2}
-            alignSelf={
-              message.sender_id === userState.data?.user.user_id
+            boxAlign={
+              message.sender_user.user_id === userState.data?.user.user_id
                 ? "flex-end"
                 : "flex-start"
             }
-            my={1}
-          >
-            {message.message}
-          </Box>
+            createdAt={message.created_at}
+          />
         ))}
       </Flex>
       <form ref={formRef} onSubmit={handleSubmit}>

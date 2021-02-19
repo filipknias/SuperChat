@@ -53,11 +53,11 @@ const SearchBar: React.FC = () => {
   };
 
   const handleUserClick = (userData: UserData) => {
+    setOpen(false);
     dispatch(setSelectedUser(userData));
     if (inputRef.current) {
       inputRef.current.value = "";
     }
-    setOpen(false);
   };
 
   const updatePopoverWidth = () => {

@@ -24,10 +24,13 @@ import { Socket, Server } from "socket.io";
 const socket = require("socket.io");
 const io: Server = socket(server);
 
+import { UserData } from "../client/src/redux/reducers/userReducer";
+
 interface Message {
   message: string;
-  sender_id: number;
+  sender_user: UserData;
   recipient_id: number;
+  created_at: Date;
 }
 
 io.on("connection", (socket: Socket) => {
