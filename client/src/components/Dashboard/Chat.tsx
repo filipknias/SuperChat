@@ -9,8 +9,9 @@ import {
   Tooltip,
   InputGroup,
   InputRightElement,
+  SimpleGrid,
 } from "@chakra-ui/react";
-import { CloseIcon, ChatIcon } from "@chakra-ui/icons";
+import { CloseIcon, ChatIcon, PlusSquareIcon, AddIcon } from "@chakra-ui/icons";
 // Redux
 import { useSelector, useDispatch } from "react-redux";
 import { setSelectedUser } from "../../redux/actions/dataActions";
@@ -84,15 +85,20 @@ const Chat: React.FC = () => {
         justifyContent="space-between"
         alignItems="center"
       >
-        <Heading size="lg" fontWeight="400">
+        <Heading size="lg" fontWeight="400" mr={3}>
           {selectedUser?.full_name}
         </Heading>
-        <Tooltip label="Close">
-          <CloseIcon
-            role="button"
-            onClick={() => dispatch(setSelectedUser(null))}
-          />
-        </Tooltip>
+        <SimpleGrid columns={2} spacing={5}>
+          <Tooltip label="Add To Contacts">
+            <AddIcon role="button" />
+          </Tooltip>
+          <Tooltip label="Close">
+            <CloseIcon
+              role="button"
+              onClick={() => dispatch(setSelectedUser(null))}
+            />
+          </Tooltip>
+        </SimpleGrid>
       </Flex>
       <Flex direction="column" flex={1} p={3}>
         {messages.map((message, index) => (

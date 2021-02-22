@@ -18,6 +18,8 @@ app.use(express.json());
 // Routes
 import usersRouter from "./routes/users";
 app.use("/api/users", usersRouter);
+import messagesRouter from "./routes/messages";
+app.use("/api/messages", messagesRouter);
 
 // Socket.io config
 import { Socket, Server } from "socket.io";

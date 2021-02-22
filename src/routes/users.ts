@@ -342,4 +342,8 @@ router.get(
   }
 );
 
+// TODO
+// GET /api/users/:userId
+// Get all users who sended messages to given user id
+
 export default router;
