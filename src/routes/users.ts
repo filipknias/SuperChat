@@ -156,8 +156,6 @@ router.put(
       const queries = [];
       const errors: Errors = {};
 
-      // console.log(typeof firstName, typeof lastName);
-
       // First Name
       if (firstName !== undefined) {
         if (isEmpty(firstName)) {
@@ -243,7 +241,7 @@ router.put(
       const lastIndex = updatedData.length - 1;
       const updatedUser = updatedData[lastIndex].rows[0];
 
-      res.status(200).json({ user: updatedUser });
+      res.status(200).json(updatedUser);
     } catch (err) {
       console.log(err);
       res.status(500).json({ message: err.message, code: err.code });
@@ -266,7 +264,7 @@ router.get(
         res.status(400).json({ errors: { general: "No user with given id" } });
       } else {
         const user = query.rows[0];
-        res.status(200).json({ user });
+        res.status(200).json(user);
       }
     } catch (err) {
       console.log(err);
@@ -291,7 +289,7 @@ router.delete(
         res.status(400).json({ errors: { general: "No user with given id" } });
       } else {
         const deletedUser = query.rows[0];
-        res.status(200).json({ user: deletedUser });
+        res.status(200).json(deletedUser);
       }
     } catch (err) {
       console.log(err);
