@@ -260,12 +260,8 @@ router.get(
       const query = await pool.query("SELECT * FROM users WHERE user_id=$1", [
         req.params.userId,
       ]);
-      if (query.rowCount === 0) {
-        res.status(400).json({ errors: { general: "No user with given id" } });
-      } else {
-        const user = query.rows[0];
-        res.status(200).json(user);
-      }
+      const user = query.rows[0];
+      res.status(200).json(user);
     } catch (err) {
       console.log(err);
       res.status(500).json({ message: err.message, code: err.code });
@@ -285,12 +281,8 @@ router.delete(
         "DELETE FROM users WHERE user_id=$1 RETURNING *",
         [req.params.userId]
       );
-      if (query.rowCount === 0) {
-        res.status(400).json({ errors: { general: "No user with given id" } });
-      } else {
-        const deletedUser = query.rows[0];
-        res.status(200).json(deletedUser);
-      }
+      const deletedUser = query.rows[0];
+      res.status(200).json(deletedUser);
     } catch (err) {
       console.log(err);
       res.status(500).json({ message: err.message, code: err.code });
@@ -339,9 +331,5 @@ router.get(
     }
   }
 );
-
-// TODO
-// GET /api/users/:userId
-// Get all users who sended messages to given user id
 
 export default router;
