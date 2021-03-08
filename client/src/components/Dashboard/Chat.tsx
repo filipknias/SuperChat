@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
+// Images
+import UsersImage from "../../assets/users.svg";
 // Components
 import Message from "./Message";
 // Chakra UI
@@ -12,6 +14,7 @@ import {
   InputRightElement,
   Center,
   CircularProgress,
+  Image,
 } from "@chakra-ui/react";
 import { CloseIcon, ChatIcon } from "@chakra-ui/icons";
 // Redux
@@ -22,14 +25,15 @@ import { UserState, UserData } from "../../redux/reducers/userReducer";
 import { DataState } from "../../redux/reducers/dataReducer";
 import { RootState } from "../../redux/store";
 
-interface Message {
+export interface Message {
   message: string;
   sender_user: UserData;
   recipient_id: number;
   created_at: Date;
 }
 
-interface MessageFromDB {
+interface MessageFromDB extends UserData {
+  message_id: number;
   message: string;
   sender_id: number;
   recipient_id: number;
@@ -91,23 +95,33 @@ const Chat: React.FC = () => {
         `/api/messages?senderId=${userState.data?.user.user_id}&recipientId=${selectedUser?.user_id}`
       );
 
-      const messagesPromises = chatMessages.data.map(
-        async (message: MessageFromDB) => {
-          const userData = await axios.get(`/api/users/${message.sender_id}`);
+      const formattedMessages = chatMessages.data.map(
+        (message: MessageFromDB) => {
+          const userData: UserData = {
+            user_id: message.user_id,
+            first_name: message.first_name,
+            last_name: message.last_name,
+            full_name: message.full_name,
+            email: message.email,
+            password: message.password,
+            created_at: message.created_at,
+            photo_url: message.photo_url,
+          };
           return {
             message: message.message,
-            sender_user: userData.data,
+            sender_user: userData,
             recipient_id: message.recipient_id,
             created_at: message.created_at,
           };
         }
       );
 
-      const formattedMessages: Message[] = await Promise.all(messagesPromises);
       setMessages(formattedMessages);
       setLoading(false);
     };
-    fetchMessages();
+    if (selectedUser) {
+      fetchMessages();
+    }
   }, [selectedUser]);
 
   // Save message to database
@@ -119,86 +133,100 @@ const Chat: React.FC = () => {
     });
   };
 
-  // TODO: setup loading circle
   return (
-    <Flex direction="column" my={5} w="100%" h="100%" bg="white">
-      <Flex
-        py={3}
-        px={5}
-        borderBottom="1px"
-        borderColor="gray.300"
-        justifyContent="space-between"
-        alignItems="center"
-      >
-        <Heading size="lg" fontWeight="400" mr={3}>
-          {selectedUser?.full_name}
-        </Heading>
-        <Tooltip label="Close">
-          <CloseIcon
-            role="button"
-            onClick={() => dispatch(setSelectedUser(null))}
-          />
-        </Tooltip>
-      </Flex>
-      <Flex direction="column" flex={1} p={3}>
-        {loading ? (
-          <Center h="100%" w="100%">
-            <CircularProgress color="blue.600" isIndeterminate />
-          </Center>
-        ) : (
-          <>
-            {messages.map((message, index) => (
-              <Message
-                key={index}
-                photoUrl={
-                  message.sender_user.photo_url === null
-                    ? undefined
-                    : message.sender_user.photo_url
-                }
-                name={message.sender_user.full_name}
-                message={message.message}
-                color={
-                  message.sender_user.user_id === userState.data?.user.user_id
-                    ? "blue"
-                    : "white"
-                }
-                boxAlign={
-                  message.sender_user.user_id === userState.data?.user.user_id
-                    ? "flex-end"
-                    : "flex-start"
-                }
-                createdAt={message.created_at}
+    <>
+      {dataState.selectedUser ? (
+        <Flex direction="column" w="100%" h="100%" bg="white">
+          <Flex
+            py={3}
+            px={5}
+            borderBottom="1px"
+            borderColor="gray.300"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <Heading size="lg" fontWeight="400" mr={3}>
+              {selectedUser?.full_name}
+            </Heading>
+            <Tooltip label="Close">
+              <CloseIcon
+                role="button"
+                onClick={() => dispatch(setSelectedUser(null))}
               />
-            ))}
-          </>
-        )}
-      </Flex>
-      <form onSubmit={handleSubmit}>
-        <InputGroup>
-          <Input
-            type="text"
-            placeholder="Send message"
-            size="lg"
-            borderRadius={0}
-            ref={inputRef}
-            required
-          />
-          <InputRightElement
-            h="100%"
-            children={
-              <Tooltip label="Send">
-                <button
-                  type="submit"
-                  style={{ padding: 10, background: "none" }}
-                >
-                  <ChatIcon border={0} role="button" />
-                </button>
-              </Tooltip>
-            }
-          />
-        </InputGroup>
-      </form>
-    </Flex>
+            </Tooltip>
+          </Flex>
+          <Flex direction="column" flex={1} p={3}>
+            {loading ? (
+              <Center h="100%" w="100%">
+                <CircularProgress color="blue.600" isIndeterminate />
+              </Center>
+            ) : (
+              <>
+                {messages.map((message, index) => (
+                  <Message
+                    key={index}
+                    photoUrl={
+                      message.sender_user.photo_url === null
+                        ? undefined
+                        : message.sender_user.photo_url
+                    }
+                    name={message.sender_user.full_name}
+                    message={message.message}
+                    color={
+                      message.sender_user.user_id ===
+                      userState.data?.user.user_id
+                        ? "blue"
+                        : "white"
+                    }
+                    boxAlign={
+                      message.sender_user.user_id ===
+                      userState.data?.user.user_id
+                        ? "flex-end"
+                        : "flex-start"
+                    }
+                    createdAt={message.created_at}
+                  />
+                ))}
+              </>
+            )}
+          </Flex>
+          <form onSubmit={handleSubmit}>
+            <InputGroup>
+              <Input
+                type="text"
+                placeholder="Send message"
+                size="lg"
+                borderRadius={0}
+                ref={inputRef}
+                required
+              />
+              <InputRightElement
+                h="100%"
+                children={
+                  <Tooltip label="Send">
+                    <button
+                      type="submit"
+                      style={{ padding: 10, background: "none" }}
+                    >
+                      <ChatIcon border={0} role="button" />
+                    </button>
+                  </Tooltip>
+                }
+              />
+            </InputGroup>
+          </form>
+        </Flex>
+      ) : (
+        <Center h="100%">
+          <Flex direction="column" alignItems="center">
+            <Image src={UsersImage} alt="Users Image" height={100} />
+            <Heading size="lg" fontWeight="400" color="gray.600">
+              No selected user
+            </Heading>
+          </Flex>
+        </Center>
+      )}
+    </>
   );
 };
 

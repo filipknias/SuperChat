@@ -15,6 +15,7 @@ import {
 // Redux
 import { useSelector, useDispatch } from "react-redux";
 import { logoutUser } from "../../redux/actions/userActions";
+import { setSelectedUser } from "../../redux/actions/dataActions";
 // Types
 import { RootState } from "../../redux/store";
 import { UserState } from "../../redux/reducers/userReducer";
@@ -23,6 +24,11 @@ const ProfilePopover: React.FC = () => {
   // Hooks
   const userState = useSelector<RootState, UserState>((state) => state.user);
   const dispatch = useDispatch();
+
+  const handleLogout = () => {
+    dispatch(setSelectedUser(null));
+    dispatch(logoutUser());
+  };
 
   return (
     <Popover placement="bottom-end">
@@ -54,7 +60,7 @@ const ProfilePopover: React.FC = () => {
             colorScheme="blue"
             variant="ghost"
             w="100%"
-            onClick={() => dispatch(logoutUser())}
+            onClick={handleLogout}
           >
             Logout
           </Button>

@@ -65,11 +65,13 @@ const SearchBar: React.FC = () => {
     setPopoverWidth(inputRef.current?.offsetWidth);
   };
 
+  // Update popover width on window resize
   useEffect(() => {
     updatePopoverWidth();
     window.addEventListener("resize", updatePopoverWidth);
   }, []);
 
+  // Search results validation
   useEffect(() => {
     // Prevent searching yourself
     const validSearchResults = searchResults.filter((searchResult) => {
@@ -80,6 +82,7 @@ const SearchBar: React.FC = () => {
     }
   }, [searchResults]);
 
+  // TODO: on input click add recent users
   return (
     <Popover
       isOpen={open}

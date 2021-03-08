@@ -20,17 +20,17 @@ router.post("/", async (req: Request, res: Response) => {
 });
 
 // GET /api/messages?senderId&recipientId
-// Get messages
+// Get messages and sender users
 router.get("/", async (req: Request, res: Response) => {
   try {
     const { senderId, recipientId } = req.query;
-
     if (!senderId || !recipientId) return;
 
     const query = await pool.query(
-      "SELECT * FROM messages WHERE sender_id=$1 AND recipient_id=$2",
+      "SELECT * FROM messages JOIN users ON messages.sender_id=users.user_id WHERE (messages.sender_id=$1 OR messages.recipient_id=$1) AND (messages.sender_id=$2 OR messages.recipient_id=$2)",
       [senderId, recipientId]
     );
+
     res.status(200).json(query.rows);
   } catch (err) {
     console.log(err);
@@ -54,11 +54,11 @@ router.delete("/:messageId", async (req: Request, res: Response) => {
 });
 
 // GET /api/messages/:userId
-// Get all messages which sender and recipient id match given user id
+// Get all messages and users which sender and recipient id match given user id
 router.get("/:userId", verifyUser, async (req: Request, res: Response) => {
   try {
     const query = await pool.query(
-      "SELECT messages.message_id, messages.sender_id, messages.recipient_id, messages.message, messages.created_at FROM users JOIN messages ON messages.recipient_id=$1 OR messages.sender_id=$1 GROUP BY message_id",
+      "SELECT DISTINCT ON (users.user_id) users.user_id, users.first_name, users.last_name, users.full_name, users.email, users.password, users.photo_url, users.created_at FROM messages JOIN users ON messages.sender_id=users.user_id OR messages.recipient_id=users.user_id WHERE (messages.recipient_id=$1 OR messages.sender_id=$1) AND (users.user_id!=$1) GROUP BY messages.message_id, users.user_id",
       [req.params.userId]
     );
     res.status(200).json(query.rows);
