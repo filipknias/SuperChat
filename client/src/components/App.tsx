@@ -27,6 +27,7 @@ const App: React.FC = () => {
   const dispatch = useDispatch();
   const userState = useSelector<RootState, UserState>((state) => state.user);
 
+  // Check json web token
   useEffect(() => {
     const token = localStorage.getItem("superchat-auth-token");
     if (token) {
@@ -43,6 +44,7 @@ const App: React.FC = () => {
     }
   }, []);
 
+  // Set socket
   useEffect(() => {
     if (userState.auth) {
       const newSocket = io("localhost:3000", {

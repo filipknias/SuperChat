@@ -9,29 +9,10 @@ router.post("/", async (req: Request, res: Response) => {
   try {
     const { senderId, recipientId, message } = req.body;
     const query = await pool.query(
-      "INSERT INTO messages (sender_id, recipient_id, message, created_at) VALUES ($1, $2, $3, $4) RETURNING *",
+      "INSERT INTO messages (sender_id, recipient_id, message, message_created_at) VALUES ($1, $2, $3, $4) RETURNING *",
       [senderId, recipientId, message, new Date()]
     );
     res.status(200).json(query.rows[0]);
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: err.message, code: err.code });
-  }
-});
-
-// GET /api/messages?senderId&recipientId
-// Get messages and sender users
-router.get("/", async (req: Request, res: Response) => {
-  try {
-    const { senderId, recipientId } = req.query;
-    if (!senderId || !recipientId) return;
-
-    const query = await pool.query(
-      "SELECT * FROM messages JOIN users ON messages.sender_id=users.user_id WHERE (messages.sender_id=$1 OR messages.recipient_id=$1) AND (messages.sender_id=$2 OR messages.recipient_id=$2)",
-      [senderId, recipientId]
-    );
-
-    res.status(200).json(query.rows);
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: err.message, code: err.code });
@@ -53,12 +34,12 @@ router.delete("/:messageId", async (req: Request, res: Response) => {
   }
 });
 
-// GET /api/messages/:userId
-// Get all messages and users which sender and recipient id match given user id
+// GET /api/users/messages/:userId
+// Get all users which sender and recipient id match given user id
 router.get("/:userId", verifyUser, async (req: Request, res: Response) => {
   try {
     const query = await pool.query(
-      "SELECT DISTINCT ON (users.user_id) users.user_id, users.first_name, users.last_name, users.full_name, users.email, users.password, users.photo_url, users.created_at FROM messages JOIN users ON messages.sender_id=users.user_id OR messages.recipient_id=users.user_id WHERE (messages.recipient_id=$1 OR messages.sender_id=$1) AND (users.user_id!=$1) GROUP BY messages.message_id, users.user_id",
+      "SELECT DISTINCT ON (messages.message_id) messages.message_id, messages.recipient_id, messages.sender_id, messages.message, messages.created_at, users.user_id, users.email, users.full_name, users.photo_url FROM messages JOIN users ON messages.sender_id=users.user_id WHERE messages.sender_id=$1 OR messages.recipient_id=$1 GROUP BY messages.message_id, users.user_id",
       [req.params.userId]
     );
     res.status(200).json(query.rows);

@@ -1,26 +1,36 @@
-import {
-  SET_SELECTED_USER,
-  SET_SOCKET,
-  START_DATA_LOADING,
-  STOP_DATA_LOADING,
-} from "../types";
-import { UserData } from "../reducers/userReducer";
+// Types
+import { SET_SELECTED_USER, SET_SOCKET, SET_MESSAGES } from "../types";
 
 interface Action {
   type: string;
   payload: any;
 }
 
+export interface SenderUser {
+  user_id: number;
+  email: string;
+  full_name: string;
+  photo_url: string | null;
+}
+
+export interface MessageFromDB extends SenderUser {
+  message_id: number;
+  message: string;
+  sender_id: number;
+  recipient_id: number;
+  created_at: Date;
+}
+
 export interface DataState {
   socket: SocketIOClient.Socket | null;
-  selectedUser: UserData | null;
-  loading: boolean;
+  selectedUser: SenderUser | null;
+  messages: MessageFromDB[];
 }
 
 const initialState = {
   socket: null,
   selectedUser: null,
-  loading: false,
+  messages: [],
 };
 
 export default (state: DataState = initialState, action: Action) => {
@@ -35,15 +45,10 @@ export default (state: DataState = initialState, action: Action) => {
         ...state,
         socket: action.payload,
       };
-    case START_DATA_LOADING:
+    case SET_MESSAGES:
       return {
         ...state,
-        loading: true,
-      };
-    case STOP_DATA_LOADING:
-      return {
-        ...state,
-        loading: false,
+        messages: action.payload,
       };
     default:
       return state;

@@ -1,7 +1,7 @@
 import {
   SET_USER,
   LOGOUT_USER,
-  SET_ERROR,
+  SET_USER_ERROR,
   CLEAR_ERROR,
   START_USER_LOADING,
   STOP_USER_LOADING,
@@ -66,7 +66,7 @@ export default (state: UserState = initialState, action: Action) => {
         auth: false,
         data: null,
       };
-    case SET_ERROR:
+    case SET_USER_ERROR:
       return {
         ...state,
         error: action.payload,

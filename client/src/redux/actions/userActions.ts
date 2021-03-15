@@ -3,7 +3,7 @@ import axios from "axios";
 import {
   SET_USER,
   LOGOUT_USER,
-  SET_ERROR,
+  SET_USER_ERROR,
   CLEAR_ERROR,
   START_USER_LOADING,
   STOP_USER_LOADING,
@@ -40,7 +40,7 @@ export const loginUser = (
     history.push("/");
   } catch (err) {
     dispatch({
-      type: SET_ERROR,
+      type: SET_USER_ERROR,
       payload: err.response.data,
     });
   }
@@ -74,7 +74,7 @@ export const registerUser = (
     history.push("/");
   } catch (err) {
     dispatch({
-      type: SET_ERROR,
+      type: SET_USER_ERROR,
       payload: err.response.data,
     });
   }
@@ -92,7 +92,7 @@ export const loginUserById = (id: string) => async (dispatch: Dispatch) => {
     dispatch({ type: SET_USER, payload: user.data });
   } catch (err) {
     dispatch({
-      type: SET_ERROR,
+      type: SET_USER_ERROR,
       payload: err.response.data,
     });
   }
